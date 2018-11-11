@@ -16,9 +16,9 @@ def main():
     '''
     model = XRayModel()
     percentage_train = 75
-    batch_size = 16
+    batch_size = 3
     optimizer = torch.optim.Adam(model.parameters(),lr=0.001, weight_decay=1e-6)
-    save_name = "test.pt"
+    save_name = "preprocess.pt"
     criterion = nn.CrossEntropyLoss()
 
     '''
@@ -36,7 +36,7 @@ def main():
 
 class Trainer():
     def __init__(self, model, optimizer, loaders, save_name,\
-                 criterion, load_path=None, log_freq=23, save_epoch_freq=3):
+                 criterion, load_path=None, log_freq=100, save_epoch_freq=3):
         self.model = model
         self.optimizer = optimizer
         self.train_loader, self.val_loader = loaders
@@ -89,6 +89,7 @@ class Trainer():
         for idx, (data, label) in enumerate(self.train_loader):
             self.optimizer.zero_grad()
             data = data.to(DEVICE)
+            label = label.to(DEVICE)
             data = torch.unsqueeze(data, 1) # so its batch x 1(channels) x height x width
             output = self.model(data)
             loss = self.criterion(output, label)
@@ -107,8 +108,9 @@ class Trainer():
         self.model.eval()
 
         with torch.no_grad():
-            for idx, (data_batch, label_batch, in_len, label_len) in enumerate(self.val_loader):
+            for idx, (data, label) in enumerate(self.val_loader):
                 data = data.to(DEVICE)
+                label = label.to(DEVICE)
                 data = torch.unsqueeze(data, 1) # so its batch x 1(channels) x height x width
                 output = self.model(data)
                 loss = self.criterion(output, label)
@@ -164,6 +166,7 @@ class Trainer():
                 correct += 1
 
         accuracy = correct / batch_size
+        print(accuracy, "accuracy")
         if self.train:
             self.train_loss[self.curr_epoch].append(loss)
             self.train_accuracy[self.curr_epoch].append(accuracy)

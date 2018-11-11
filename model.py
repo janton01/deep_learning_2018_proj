@@ -33,13 +33,16 @@ class XRayModel(nn.Module):
                 nn.Conv2d(192,10,(1,1)),
                 nn.ReLU(),
                 nn.AvgPool2d((6,6)))
-        self.classifier = nn.Linear(in_features=16777216, out_features=num_outputs)
+        self.classifier = nn.Linear(in_features=17640, out_features=num_outputs)
 
         # initialize model
+
 
     def forward(self, batch_input):
         #out = self.dense_layers(batch_input)
         out = self.all_cnn(batch_input)
+        #import pdb
+        #pdb.set_trace()
         out = out.view(out.shape[0], -1)
         #out = self.dense_layers(batch_input)
         out = self.classifier(out)
