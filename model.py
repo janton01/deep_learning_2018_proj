@@ -35,6 +35,12 @@ class XRayModel(nn.Module):
                 nn.AvgPool2d((6,6)))
         self.classifier = nn.Linear(in_features=17640, out_features=num_outputs)
 
+        for m in self.modules():
+            if isinstance(m, nn.Linear):
+                nn.init.xavier_uniform_(m.weight)
+            elif isinstance(m, nn.Conv2d):
+                nn.init.kaiming_normal_(m.weight, mode='fan_out')
+
         # initialize model
 
 

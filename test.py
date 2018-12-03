@@ -36,7 +36,7 @@ def main():
 
 class Trainer():
     def __init__(self, model, optimizer, loaders, save_name,\
-                 criterion, load_path=None, log_freq=100, save_epoch_freq=3):
+                 criterion, load_path=None, log_freq=35, save_epoch_freq=3):
         self.model = model
         self.optimizer = optimizer
         self.train_loader, self.val_loader = loaders
