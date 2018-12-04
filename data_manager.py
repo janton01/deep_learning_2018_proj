@@ -1,6 +1,7 @@
+import torch
 import numpy as np
 from torch.utils.data import Dataset, DataLoader
-from test import DEVICE
+DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 import torch
 import random
 
@@ -15,16 +16,32 @@ def sample_zero_mean(x):
 
 class XrayDataset(Dataset):
     def __init__(self, inputs, labels):
-        self.inputs = sample_zero_mean(inputs.reshape(inputs.shape[0], -1)).reshape(inputs.shape)
-        self.labels = labels
+        assert len(inputs) == len(labels)
+        self.inputs = torch.from_numpy(sample_zero_mean(inputs.reshape(inputs.shape[0], -1)).reshape(inputs.shape)).float()
+        self.labels = torch.from_numpy(labels)
 
     def __getitem__(self,i):
-        return torch.from_numpy(self.inputs[i]).float(),self.labels[i]
+        return self.inputs[i].to(DEVICE), self.labels[i].to(DEVICE).long()
 
     def __len__(self):
         return len(self.inputs)
 
-def get_loaders(normal, abnormal, percentage_train, batch_size):
+
+
+def get_loaders(train_d, val_d, test_d, train_l, val_l, test_l, batch_size):
+    train_dataset = XrayDataset(train_d, train_l)
+    val_dataset  = XrayDataset(val_d, val_l)
+    test_dataset   = XrayDataset(test_d, test_l)
+
+
+    train_loader = DataLoader(train_dataset, shuffle=True, batch_size=batch_size)
+    dev_loader   = DataLoader(val_dataset, shuffle=False, batch_size=batch_size)
+    test_loader   = DataLoader(test_dataset, shuffle=False, batch_size=batch_size)
+    return train_loader, dev_loader, test_loader
+
+
+# depracated:
+def get_loaders_normal_abnormal(normal, abnormal, percentage_train, batch_size):
     inputs = np.vstack((normal, abnormal))
     normal_labels = np.full((normal.shape[0]), 1)
     abnormal_labels = np.full((abnormal.shape[0]), 0)
